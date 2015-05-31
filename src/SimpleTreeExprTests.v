@@ -11,6 +11,11 @@ Definition optBind {X Y} (o: option X) (f: X -> option Y) : option Y :=
   | Some x => f x
   end.
 
+Definition option_eq_dec {X} (X_eq_dec: forall x y: X, {x = y} + {x <> y}) : 
+  forall x y: option X, {x = y} + {x <> y}.
+  decide equality.
+Defined.
+
 Lemma optBind_optBind: forall A B C (f1: A -> option B) (f2: B -> option C) x,
   optBind (optBind x f1) f2 = optBind x (fun y => optBind (f1 y) f2).
 Proof.
@@ -22,8 +27,52 @@ Lemma optBind_extEq: forall X Y (f g: X -> option Y) x,
 Proof.
   destruct x; auto. intros. simpl. auto.
 Qed.
+
+Lemma optBind_neq_funEq: forall X Y (o1 o2: option X) (f: X -> option Y),
+  optBind o1 f <> optBind o2 f -> o1 <> o2.
+Proof.
+  destruct o1; destruct o2; simpl; congruence.
+Qed.
   
 (* *** *)
+
+(*
+Definition finTryCast {n} (i: Fin.t n) : forall m, option (Fin.t m).
+  induction i.
+  - destruct m.
+    + exact None.
+    + exact (Some Fin.F1).
+  - destruct m.
+    + exact None.
+    + destruct (IHi m).
+      * rename t into j. exact (Some (Fin.FS j)).
+      * exact None.
+Defined.
+*)
+
+Definition finSplitLR {n m} (i: Fin.t (n + m)) : Fin.t n + Fin.t m.
+  revert m i. induction n.
+  - simpl. intros. right. exact i.
+  - simpl. intros. remember (S (n + m)) as snm. destruct i.
+    + left. exact Fin.F1.
+    + injection Heqsnm. intro Heq. subst n0. clear Heqsnm. destruct (IHn m i) as [j | j].
+      * left. exact (Fin.FS j).
+      * right. exact j.
+Defined.
+
+Lemma finSplitLR_FinL: forall n (i: Fin.t n) m, finSplitLR (Fin.L m i) = inl i.
+Proof.
+  induction i; auto.
+  simpl. intros. unfold eq_rec_r, eq_rec, eq_sym. simpl.
+  rewrite IHi. reflexivity.
+Qed.
+
+Lemma finSplitLR_FinR: forall m (i: Fin.t m) n, finSplitLR (Fin.R n i) = inr i.
+Proof.
+  intros.  revert m i. induction n; auto.
+  simpl. intros. unfold eq_rec_r, eq_rec, eq_sym. simpl.
+  rewrite IHn. reflexivity.
+Qed.
 
 Definition Fin_eq_dep_dec: forall {m n} (x: Fin.t m) (y: Fin.t n), 
   {eq_dep nat Fin.t m x n y} + {~eq_dep nat Fin.t m x n y}.
@@ -54,6 +103,10 @@ Fixpoint valDepth (v: Val) {struct v} : nat :=
   | VCons v1 v2 => S (max (valDepth v1) (valDepth v2))
   | _ => 0
   end.
+
+Definition Val_eq_dec: forall x y: Val, {x = y} + {x <> y}.
+  decide equality.
+Defined.
 
 (* *** *)
 
@@ -135,27 +188,42 @@ Fixpoint mvMinVarDepth {n} (mv: MVal n) : option nat :=
     end
   end.
 
+Definition mvCast {n} (m: nat) (mv: MVal n) : MVal (n + m).
+  revert m. induction mv.
+  - intro m. exact MVNil.
+  - rename t into i. intro m. exact (MVVar (Fin.L m i)).
+  - intro m. exact (MVCons (IHmv1 m) (IHmv2 m)).
+Defined.
+
+Definition mvShift {m} (n: nat) (mv: MVal m) : MVal (n + m).
+  revert n. induction mv.
+  - rename n into m. intro n. exact MVNil.
+  - rename n into m. rename t into i. intro n. exact (MVVar (Fin.R n i)).
+  - rename n into m. intro n. exact (MVCons (IHmv1 n) (IHmv2 n)).
+Defined.
+
 Definition MVal_eq_dep_dec {m n}: forall (x: MVal m) (y: MVal n),
   {eq_dep nat MVal m x n y} + {~eq_dep nat MVal m x n y}.
   intro x. revert n. 
   induction x; destruct y; try solve [right; intro H; inversion H].
   - (* MVNil n, MVNil n0 *) destruct (eq_nat_dec n n0) as [Heq | Hneq].
-    + subst n0. left. reflexivity.
+    + left. subst n0. reflexivity.
     + right. intro H. apply Hneq. destruct H. reflexivity.
   - rename n into m. rename t into i. rename n0 into n. rename t0 into j.
     (* MVVar m i, MVVar n j *) destruct (Fin_eq_dep_dec i j) as [Heq | Hneq].
-    + destruct Heq. left. reflexivity.
+    + left. destruct Heq. reflexivity.
     + right. intro H. apply Hneq. inversion H. reflexivity.
   - (* MVCons n x1 x2, MVCons n0 y1 y2 *)
     destruct (IHx1 n0 y1) as [Heq1 | Hneq1].
     + destruct (IHx2 n0 y2) as [Heq2 | Hneq2].
-      * destruct Heq1. apply (eq_dep_eq_dec eq_nat_dec) in Heq2.
-        subst. left. reflexivity.
+      * left. destruct Heq1. apply (eq_dep_eq_dec eq_nat_dec) in Heq2.
+        subst. reflexivity.
       * right. intro H. apply Hneq2. inversion H. reflexivity. 
-    + destruct (IHx2 n0 y2) as [Heq2 | Hneq2].
-      * admit.
-      * right. intro H. apply Hneq2. inversion H. reflexivity. 
+    + right. intro H. apply Hneq1. inversion H. subst.
+      apply (inj_pair2_eq_dec _ eq_nat_dec) in H4. subst. reflexivity.
 Defined.
+
+(* Print Assumptions MVal_eq_dep_dec. *)
 
 Definition MVal_eq_dec {n}: forall x y: MVal n, {x = y} + {x <> y}.
   intros. destruct (MVal_eq_dep_dec x y) as [Heq | Hneq].
@@ -293,27 +361,81 @@ Qed.
 (* *** *)
 
 Definition vCutAt (d:nat) (v: Val) : {n: nat & Subst n * MVal n}%type.
-  induction v.
-  - (* VNil *) exists 0. split.
+  revert d. induction v.
+  - (* VNil *) intro d. exists 0. split.
     + red. intro i. apply Fin.case0. exact i.
     + exact MVNil.
-  - (* VCons v1 v2 *) 
-    destruct d.
+  - (* VCons v1 v2 *) intro d.
+    destruct d as [|d].
     + exists 1. exact (fun i => VCons v1 v2, MVVar (Fin.F1)).
-    + destruct IHv1 as [n [s1 mv1]]. destruct IHv2 as [m [s2 mv2]].
+    + destruct (IHv1 d) as [n [s1 mv1]]. destruct (IHv2 d) as [m [s2 mv2]].
       exists (n + m).
-      admit.
+      split.
+      { intro i. destruct (finSplitLR i) as [j | j].
+        - exact (s1 j).
+        - exact (s2 j). }
+      { exact (MVCons (mvCast m mv1) (mvShift n mv2)). }
 Defined.
+
+Lemma mvSubst_finSplitLR_mvCast: forall n m s1 s2 mv,
+  mvSubst (fun i : Fin.t (n + m) =>
+   match finSplitLR i with
+   | inl j => s1 j
+   | inr j => s2 j
+   end) (mvCast m mv) = mvSubst s1 mv.
+Proof.
+  intros. revert m s1 s2. induction mv; auto.
+  - simpl. intros.
+    rewrite finSplitLR_FinL. reflexivity.
+  - simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
+Qed.
+
+Lemma mvSubst_finSplitLR_mvShift: forall n m s1 s2 mv,
+  mvSubst (fun i : Fin.t (n + m) =>
+   match finSplitLR i with
+   | inl j => s1 j
+   | inr j => s2 j
+   end) (mvShift n mv) = mvSubst s2 mv.
+Proof.
+  intros. revert n s1 s2. induction mv; auto.
+  - simpl. intros.
+    rewrite finSplitLR_FinR. reflexivity.
+  - simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
+Qed.
 
 Lemma vCutAt_mvSubst: forall d v n s mv, 
   vCutAt d v = existT (fun n => Subst n * MVal n)%type n (s, mv) ->
   mvSubst s mv = v.
 Proof.
-Admitted.
+  intros d v. revert d. induction v.
+  - simpl. intros. rewrite eq_sigT_iff_eq_dep in H. inversion H.
+    subst.
+    apply (inj_pair2_eq_dec _ eq_nat_dec) in H3.
+    apply (inj_pair2_eq_dec _ eq_nat_dec) in H4.
+    subst. reflexivity.
+  - simpl. destruct d as [|d].
+    + intros. rewrite eq_sigT_iff_eq_dep in H. inversion H.
+      subst.
+      apply (inj_pair2_eq_dec _ eq_nat_dec) in H3.
+      apply (inj_pair2_eq_dec _ eq_nat_dec) in H4.
+      subst. reflexivity.
+    + intros.
+      destruct (vCutAt d v1) as [n' [s1 mv1]] eqn: Heq1.
+      destruct (vCutAt d v2) as [m' [s2 mv2]] eqn: Heq2.
+      rewrite eq_sigT_iff_eq_dep in H. inversion H. clear H.
+      subst.
+      apply (inj_pair2_eq_dec _ eq_nat_dec) in H3.
+      apply (inj_pair2_eq_dec _ eq_nat_dec) in H4.
+      subst.
+      simpl. f_equal.
+      * rewrite mvSubst_finSplitLR_mvCast. eauto. 
+      * rewrite mvSubst_finSplitLR_mvShift. eauto. 
+Qed.
 
 (* *** *)
 
-Lemma main1: forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
+Lemma NTrm_fixed_MaxSelCmpLen_testable_aux: 
+  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
   forall v, ntEval t1 v <> ntEval t2 v -> exists v1, 
   valDepth v1 <= S d /\ ntEval t1 v1 <> ntEval t2 v1.
 Proof.
@@ -321,12 +443,6 @@ Proof.
   replace v with (mvSubst s mv) in *. 2: apply vCutAt_mvSubst with (d:=d); auto.
   rewrite ntmvEval_ntEval in H1. 2: admit.
   rewrite ntmvEval_ntEval in H1. 2: admit.
-
-Lemma optBind_neq_funEq: forall X Y (o1 o2: option X) (f: X -> option Y),
-  optBind o1 f <> optBind o2 f -> o1 <> o2.
-Proof.
-  destruct o1; destruct o2; simpl; congruence.
-Qed.
   apply optBind_neq_funEq in H1.
   destruct (ntmvEval t1 mv) as [mv1|] eqn: Heq1;
   destruct (ntmvEval t2 mv) as [mv2|] eqn: Heq2; try congruence.
@@ -352,6 +468,21 @@ Qed.
       rewrite ntmvEval_ntEval. 2: admit.
       rewrite Heq1. rewrite Heq2. simpl. congruence.
 Qed.
+
+Lemma NTrm_fixed_MaxSelCmpLen_testable: 
+  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
+  (forall v, valDepth v <= S d -> ntEval t1 v = ntEval t2 v) -> 
+  forall v, ntEval t1 v = ntEval t2 v.
+Proof.
+  intros d t1 t2 HscLen1 HscLen2 HallTstEq v.
+  destruct (option_eq_dec Val_eq_dec (ntEval t1 v) (ntEval t2 v)) as [Heq | Hneq]; auto.
+  contradict HallTstEq. intro HallTstEq. 
+  pose (H := NTrm_fixed_MaxSelCmpLen_testable_aux _ _ _ HscLen1 HscLen2 _ Hneq).
+  destruct H as [v1 [Hdepth Hneq1]].
+  specialize (HallTstEq _ Hdepth). congruence.
+Qed.
+
+Print Assumptions NTrm_fixed_MaxSelCmpLen_testable.
 
 
 
