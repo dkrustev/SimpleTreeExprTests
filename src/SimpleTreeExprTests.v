@@ -1,6 +1,8 @@
 (* author: Dimitur Krustev *)
 (* (re-)started: 20150503 *)
 
+(* Finite Test Sets for a Class of Simple Programs on Binary Trees *)
+
 Require Import List Arith.
 Require Import Eqdep Eqdep_dec.
 Require Fin.
@@ -175,6 +177,12 @@ Fixpoint mvSubstFlipped {n: nat} (t: MVal n) {struct t} : Subst n -> Val :=
 
 Definition mvSubst {n: nat} (s: Subst n) (t: MVal n) := mvSubstFlipped t s.
 
+Fixpoint mvDepth {n} (mv: MVal n) {struct mv} : nat :=
+  match mv with
+  | MVCons _ mv1 mv2 => S (max (mvDepth mv1) (mvDepth mv2))
+  | _ => 0
+  end.
+
 Fixpoint mvMinVarDepth {n} (mv: MVal n) : option nat :=
   match mv with
   | MVNil _ => None
@@ -230,6 +238,47 @@ Definition MVal_eq_dec {n}: forall x y: MVal n, {x = y} + {x <> y}.
   - left. apply (eq_dep_eq_dec eq_nat_dec) in Heq. assumption.
   - right. intro H. apply Hneq. subst. reflexivity.
 Defined.
+
+Lemma mvDepth_mvCast: forall n (mv: MVal n) m,
+  mvDepth (mvCast m mv) = mvDepth mv.
+Proof.
+  induction mv; auto.
+  simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
+Qed.
+
+Lemma mvDepth_mvShift: forall m (mv: MVal m) n,
+  mvDepth (mvShift n mv) = mvDepth mv.
+Proof.
+  induction mv; auto.
+  simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
+Qed.
+
+Lemma mvMinVarDepth_mvCast: forall n (mv: MVal n) m,
+  mvMinVarDepth (mvCast m mv) = mvMinVarDepth mv.
+Proof.
+  induction mv; auto.
+  simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
+Qed.
+
+Lemma mvMinVarDepth_mvShift: forall m (mv: MVal m) n,
+  mvMinVarDepth (mvShift n mv) = mvMinVarDepth mv.
+Proof.
+  induction mv; auto.
+  simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
+Qed.
+
+Lemma valDepth_mvSubst_le: forall n (mv: MVal n) s d,
+  (forall i, valDepth (s i) <= d) -> valDepth (mvSubst s mv) <= d + mvDepth mv.
+Proof.
+  induction mv; auto with arith.
+  - rename t into i.
+    (* MVVar i *) simpl. intros. rewrite <- plus_n_O. auto.
+  - (* MVCons mv1 mv2 *) simpl. intros.
+    rewrite <- plus_n_Sm. apply le_n_S.
+    apply NPeano.Nat.max_lub.
+    + transitivity (d + mvDepth mv1); auto with arith.
+    + transitivity (d + mvDepth mv2); auto with arith.
+Qed.
 
 (* *** *)
 
@@ -316,7 +365,7 @@ Fixpoint ntmvEval (t: NTrm) {struct t} : forall {n}, MVal n -> option (MVal n) :
 Lemma scmvEval_scEval: forall (sc: list Selector) n (s: Subst n) (mv: MVal n),
   match mvMinVarDepth mv with
    | None => True
-   | Some d => length sc < d
+   | Some d => length sc <= d
   end ->
   scEval sc (mvSubst s mv) = optBind (scmvEval sc mv) (fun mv => Some (mvSubst s mv)).
 Proof.
@@ -325,11 +374,23 @@ Proof.
   - (* MVVar t *) rename t into i. simpl. intros. contradict H. auto with arith.
   - (* MVCons mv1 mv2 *) simpl. intros. destruct sel.
     + apply IHsc; auto. destruct (mvMinVarDepth mv1).
-      * destruct (mvMinVarDepth mv2).
-        { admit. }
-        { auto with arith. }
+      * destruct (mvMinVarDepth mv2); eauto with arith. 
       * constructor.
-    + apply IHsc; auto. admit.
+    + apply IHsc; auto. destruct (mvMinVarDepth mv2); auto.
+      destruct (mvMinVarDepth mv1); eauto with arith.
+Qed.
+
+Lemma scmvEval_SomeMVVar_mvMinVarDepth: forall sc n (mv: MVal n) i,
+  scmvEval sc mv = Some (MVVar i) -> exists d, mvMinVarDepth mv = Some d /\ d <= length sc.
+Proof.
+  induction sc.
+  - simpl. intros. inversion H. subst. clear H. simpl. exists 0. auto with arith.
+  - rename a into sel. simpl. intros.
+    destruct mv; try congruence. simpl. destruct sel.
+    + specialize (IHsc _ _ _ H). destruct IHsc as [d [Hmvd Hle]].
+      rewrite Hmvd. destruct (mvMinVarDepth mv2); eauto with arith.
+    + specialize (IHsc _ _ _ H). destruct IHsc as [d [Hmvd Hle]].
+      rewrite Hmvd. destruct (mvMinVarDepth mv1); eauto with arith. 
 Qed.
 
 Lemma ntmvEval_ntEval: forall (t: NTrm) n (s: Subst n) (mv: MVal n),
@@ -341,21 +402,28 @@ Lemma ntmvEval_ntEval: forall (t: NTrm) n (s: Subst n) (mv: MVal n),
 Proof.
   induction t; auto.
   - (* NCons t1 t2 *) simpl. intros.
-    rewrite IHt1; auto. 2: admit.
-    rewrite IHt2; auto. 2: admit.
+    rewrite IHt1; auto. 2: destruct (mvMinVarDepth mv); eauto with arith.
+    rewrite IHt2; auto. 2: destruct (mvMinVarDepth mv); eauto with arith.
     repeat (rewrite optBind_optBind). simpl.
     apply optBind_extEq. intro mv1.
     repeat (rewrite optBind_optBind). reflexivity.
   - rename l into sc. simpl. intros.
-    apply scmvEval_scEval; auto.
-  - rename l into sc. (* NIfNil sc t1 t2 *)
+    apply scmvEval_scEval; auto. destruct (mvMinVarDepth mv); eauto with arith.
+  - rename l into sc.
+    (* NIfNil sc t1 t2 *)
     simpl. intros.
-    rewrite scmvEval_scEval; auto. 2: admit.
+    rewrite scmvEval_scEval; auto. 2: destruct (mvMinVarDepth mv); eauto with arith.
     destruct (scmvEval sc mv) eqn: Heq; auto.
     simpl. destruct m.
-    + simpl. apply IHt1. admit.
-    + rename t into i. simpl. admit.
-    + simpl. apply IHt2. admit.
+    + simpl. apply IHt1. destruct (mvMinVarDepth mv); eauto with arith.
+    + rename t into i. simpl.
+      apply scmvEval_SomeMVVar_mvMinVarDepth in Heq. destruct Heq as [d [Hmvd Hle]].
+      rewrite Hmvd in *. contradict Hle. 
+      rewrite NPeano.Nat.max_lub_lt_iff in H. 
+      (* here is the only reason to have [ntMaxSelCmpLen t < d] 
+        instead of [ntMaxSelCmpLen t <= d] *)
+      destruct H. auto with arith.
+    + simpl. apply IHt2. destruct (mvMinVarDepth mv); eauto with arith.
 Qed.
 
 (* *** *)
@@ -431,18 +499,66 @@ Proof.
       * rewrite mvSubst_finSplitLR_mvCast. eauto. 
       * rewrite mvSubst_finSplitLR_mvShift. eauto. 
 Qed.
+      
+Lemma mvDepth_vCutAt_le: forall d v n s mv,
+  vCutAt d v = existT (fun n : nat => (Subst n * MVal n)%type) n (s, mv) ->
+  mvDepth mv <= d.
+Proof.
+  intros d v. revert d. induction v.
+  - simpl. intros.
+    rewrite eq_sigT_iff_eq_dep in H. inversion H. auto with arith.
+  - simpl. intros. destruct d.
+    + rewrite eq_sigT_iff_eq_dep in H. inversion H. auto.
+    + destruct (vCutAt d v1) as [n1 [s1 mv1]] eqn: Heq1.
+      destruct (vCutAt d v2) as [n2 [s2 mv2]] eqn: Heq2.
+      rewrite eq_sigT_iff_eq_dep in H. inversion H.
+      simpl. apply le_n_S.
+
+      rewrite mvDepth_mvCast. rewrite mvDepth_mvShift.
+      specialize (IHv1 _ _ _ _ Heq1).
+      specialize (IHv2 _ _ _ _ Heq2).
+      apply NPeano.Nat.max_lub; auto.
+Qed.
+
+Lemma vCutAt_mvMinVarDepth: forall d v n s mv,
+  vCutAt d v = existT (fun n : nat => (Subst n * MVal n)%type) n (s, mv) ->
+  mvMinVarDepth mv = None \/ mvMinVarDepth mv = Some d.
+Proof.
+  intros d v. revert d. induction v.
+  - simpl. intros.
+    rewrite eq_sigT_iff_eq_dep in H. inversion H. auto.
+  - simpl. intros. destruct d.
+    + rewrite eq_sigT_iff_eq_dep in H. inversion H. auto.
+    + destruct (vCutAt d v1) as [n1 [s1 mv1]] eqn: Heq1.
+      destruct (vCutAt d v2) as [n2 [s2 mv2]] eqn: Heq2.
+      rewrite eq_sigT_iff_eq_dep in H. inversion H. subst.
+      apply (inj_pair2_eq_dec _ eq_nat_dec) in H3. subst. clear H2 H.
+      simpl.
+      specialize (IHv1 _ _ _ _ Heq1).
+      specialize (IHv2 _ _ _ _ Heq2).
+      rewrite mvMinVarDepth_mvCast. rewrite mvMinVarDepth_mvShift.
+      destruct IHv1 as [IHv1 | IHv1]; rewrite IHv1;
+      destruct IHv2 as [IHv2 | IHv2]; rewrite IHv2;
+      auto with arith.
+Qed.
 
 (* *** *)
 
 Lemma NTrm_fixed_MaxSelCmpLen_testable_aux: 
-  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
+  forall d t1 t2, ntMaxSelCmpLen t1 < d -> ntMaxSelCmpLen t2 < d ->
   forall v, ntEval t1 v <> ntEval t2 v -> exists v1, 
   valDepth v1 <= S d /\ ntEval t1 v1 <> ntEval t2 v1.
 Proof.
   intros. remember (vCutAt d v) as x. destruct x as [n [s mv]]. symmetry in Heqx.
-  replace v with (mvSubst s mv) in *. 2: apply vCutAt_mvSubst with (d:=d); auto.
-  rewrite ntmvEval_ntEval in H1. 2: admit.
-  rewrite ntmvEval_ntEval in H1. 2: admit.
+  replace v with (mvSubst s mv) in H1. 2: apply vCutAt_mvSubst with (d:=d); auto.
+  rewrite ntmvEval_ntEval in H1. 
+  Focus 2. 
+    apply vCutAt_mvMinVarDepth in Heqx. 
+    destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+  rewrite ntmvEval_ntEval in H1. 
+  Focus 2. 
+    apply vCutAt_mvMinVarDepth in Heqx. 
+    destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
   apply optBind_neq_funEq in H1.
   destruct (ntmvEval t1 mv) as [mv1|] eqn: Heq1;
   destruct (ntmvEval t2 mv) as [mv2|] eqn: Heq2; try congruence.
@@ -451,26 +567,50 @@ Proof.
     pose (HexistsSubst := mvSubst_discrim _ _ _ Hneq).
     destruct HexistsSubst as [s1 [Hdepth Hneq1]].
     exists (mvSubst s1 mv). split.
-    + admit.
-    + rewrite ntmvEval_ntEval. 2: admit.
-      rewrite ntmvEval_ntEval. 2: admit.
+    + apply mvDepth_vCutAt_le in Heqx.
+      transitivity (1 + mvDepth mv); auto with arith.
+      apply valDepth_mvSubst_le; auto.
+    + rewrite ntmvEval_ntEval. 
+      Focus 2. 
+        apply vCutAt_mvMinVarDepth in Heqx. 
+        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+      rewrite ntmvEval_ntEval. 
+      Focus 2. 
+        apply vCutAt_mvMinVarDepth in Heqx. 
+        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
       rewrite Heq1. rewrite Heq2. simpl. congruence.
   - (* Some mv1, None *)
     exists (mvSubst (fun _ => VNil) mv). split.
-    + admit.
-    + rewrite ntmvEval_ntEval. 2: admit.
-      rewrite ntmvEval_ntEval. 2: admit.
+    + apply mvDepth_vCutAt_le in Heqx.
+      transitivity (1 + mvDepth mv); auto with arith.
+      apply valDepth_mvSubst_le; auto.
+    + rewrite ntmvEval_ntEval.
+      Focus 2. 
+        apply vCutAt_mvMinVarDepth in Heqx. 
+        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+      rewrite ntmvEval_ntEval.
+      Focus 2. 
+        apply vCutAt_mvMinVarDepth in Heqx. 
+        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
       rewrite Heq1. rewrite Heq2. simpl. congruence.
   - (* None, Some mv2 *)
     exists (mvSubst (fun _ => VNil) mv). split.
-    + admit.
-    + rewrite ntmvEval_ntEval. 2: admit.
-      rewrite ntmvEval_ntEval. 2: admit.
+    + apply mvDepth_vCutAt_le in Heqx.
+      transitivity (1 + mvDepth mv); auto with arith.
+      apply valDepth_mvSubst_le; auto.
+    + rewrite ntmvEval_ntEval.
+      Focus 2. 
+        apply vCutAt_mvMinVarDepth in Heqx. 
+        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+      rewrite ntmvEval_ntEval. 
+      Focus 2. 
+        apply vCutAt_mvMinVarDepth in Heqx. 
+        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
       rewrite Heq1. rewrite Heq2. simpl. congruence.
 Qed.
 
-Lemma NTrm_fixed_MaxSelCmpLen_testable: 
-  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
+Theorem NTrm_fixed_MaxSelCmpLen_testable: 
+  forall d t1 t2, ntMaxSelCmpLen t1 < d -> ntMaxSelCmpLen t2 < d ->
   (forall v, valDepth v <= S d -> ntEval t1 v = ntEval t2 v) -> 
   forall v, ntEval t1 v = ntEval t2 v.
 Proof.
@@ -482,7 +622,16 @@ Proof.
   specialize (HallTstEq _ Hdepth). congruence.
 Qed.
 
-Print Assumptions NTrm_fixed_MaxSelCmpLen_testable.
+(* Print Assumptions NTrm_fixed_MaxSelCmpLen_testable. *)
 
+Theorem NTrm_fixed_MaxSelCmpLen_testable': 
+  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
+  (forall v, valDepth v <= d + 2 -> ntEval t1 v = ntEval t2 v) -> 
+  forall v, ntEval t1 v = ntEval t2 v.
+Proof.
+  intros.
+  apply NTrm_fixed_MaxSelCmpLen_testable with (d:=S d); auto with arith.
+  intros. apply H1. rewrite plus_comm. auto.
+Qed.
 
 
