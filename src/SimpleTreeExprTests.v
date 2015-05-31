@@ -637,4 +637,46 @@ Qed.
 
 (* Print Assumptions NTrm_fixed_MaxSelCmpLen_testable. *)
 
+(* *** *)
+(* Show that bound on test set depth is tight: *)
+
+Definition replicate {X} n (x: X) := map (fun _ => x) (seq 0 n).
+
+(* counterexample taken from some old essays from 20100722: 
+Definition undiscrTerms (n: nat) : (NTrm * NTrm) :=
+  let sels := replicate n HD in
+  let sels1 := sels ++ (HD::nil) in
+  let sels2 := sels ++ (TL::nil) in
+  let nt1 := NIfNil sels1 NNil (NIfNil sels2 NNil (NSelCmp sels1)) in
+  let nt2 := NIfNil sels1 NNil (NIfNil sels2 NNil (NSelCmp sels2)) in
+  (nt1, nt2).
+*)
+
+Lemma undiscrTerms_exist: forall n, exists nt1, exists nt2,
+  ntMaxSelCmpLen nt1 = S n /\ ntMaxSelCmpLen nt2 = S n /\
+  (forall v, valDepth v <= S n -> ntEval nt1 v = ntEval nt2 v)
+  /\ exists v, ntEval nt1 v <> ntEval nt2 v.
+Proof.
+  intros.
+  exists (NSelCmp (replicate n HD ++ (HD::nil))).
+  exists (NSelCmp (replicate n HD ++ (TL::nil))).
+  simpl. 
+  repeat (rewrite app_length). simpl. unfold replicate.
+  rewrite map_length. rewrite seq_length. rewrite plus_comm.
+  split; auto with arith.
+  split; auto with arith.
+  split.
+  - induction n.
+    + simpl. destruct v; auto. simpl. 
+      destruct v1; destruct v2; auto;
+        simpl; try solve [intro H; contradict H; auto with arith].
+    + simpl. destruct v; auto. simpl. intro Hle.
+      rewrite <- seq_shift. rewrite map_map. apply IHn. 
+      apply le_S_n in Hle. eapply Max.max_lub_l. eassumption.
+  - induction n.
+    + simpl. exists (VCons VNil (VCons VNil VNil)). congruence.
+    + simpl. rewrite <- seq_shift. rewrite map_map.
+      destruct IHn as [v Hneq].
+      exists (VCons v VNil). assumption.
+Qed.
 
