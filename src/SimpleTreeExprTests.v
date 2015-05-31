@@ -7,6 +7,8 @@ Require Import List Arith.
 Require Import Eqdep Eqdep_dec.
 Require Fin.
 
+(* Some utility definitions/lemmas missing from Coq's stdlib: *)
+
 Definition optBind {X Y} (o: option X) (f: X -> option Y) : option Y :=
   match o with
   | None => None
@@ -97,6 +99,7 @@ Definition Fin_eq_dec: forall {n} (f1 f2: Fin.t n), {f1 = f2} + {f1 <> f2}.
 Defined.
 
 (* *** *)
+(* The value domain of unlabeled binary trees: *)
 
 Inductive Val: Set := VNil | VCons (hd tl: Val).
 
@@ -111,6 +114,7 @@ Definition Val_eq_dec: forall x y: Val, {x = y} + {x <> y}.
 Defined.
 
 (* *** *)
+(* Normal form of simple programs on binary trees and its evaluation: *)
 
 Inductive Selector: Set := HD | TL.
 
@@ -125,8 +129,6 @@ Fixpoint scEval (sc: list Selector) (v: Val) {struct sc} : option Val :=
       end
     end
   end.
-
-(* *** *)
 
 Inductive NTrm: Set :=
   | NNil: NTrm 
@@ -156,6 +158,7 @@ Fixpoint ntMaxSelCmpLen (nt: NTrm) {struct nt} : nat :=
   end.
 
 (* *** *)
+(* Binary trees with holes (represented by variables): *)
 
 Inductive MVal: nat -> Set :=
   | MVNil: forall n, MVal n
@@ -281,6 +284,7 @@ Proof.
 Qed.
 
 (* *** *)
+(* A key testing lemma for binary trees with holes: *)
 
 Lemma mvSubst_discrim: forall n (mv1 mv2: MVal n), mv1 <> mv2 -> exists s, 
   (forall i, valDepth (s i) <= 1) /\ mvSubst s mv1 <> mvSubst s mv2.
@@ -332,6 +336,7 @@ Proof.
 Qed.
 
 (* *** *)
+(* Normal-form evaluator extended to operate on trees with holes: *)
 
 Fixpoint scmvEval (sc: list Selector) : forall {n}, MVal n -> option (MVal n) :=
   match sc with
@@ -361,6 +366,8 @@ Fixpoint ntmvEval (t: NTrm) {struct t} : forall {n}, MVal n -> option (MVal n) :
   end.
 
 (* *** *)
+(* Key lemmas about commuting (extended) evaluation and hole-filling
+  when selector-composition length <= min hole depth: *)
 
 Lemma scmvEval_scEval: forall (sc: list Selector) n (s: Subst n) (mv: MVal n),
   match mvMinVarDepth mv with
@@ -428,6 +435,8 @@ Proof.
 Qed.
 
 (* *** *)
+(* Decomposing a tree - at a given depth - to a tree with holes and a substitution
+  giving subtrees for holes: *)
 
 Definition vCutAt (d:nat) (v: Val) : {n: nat & Subst n * MVal n}%type.
   revert d. induction v.
@@ -471,6 +480,8 @@ Proof.
     rewrite finSplitLR_FinR. reflexivity.
   - simpl. intros. rewrite IHmv1. rewrite IHmv2. reflexivity.
 Qed.
+
+(* Correctness of tree decomposition: *)
 
 Lemma vCutAt_mvSubst: forall d v n s mv, 
   vCutAt d v = existT (fun n => Subst n * MVal n)%type n (s, mv) ->
@@ -544,6 +555,7 @@ Proof.
 Qed.
 
 (* *** *)
+(* Main result about discriminating inequivalent programs by a finite test set: *)
 
 Lemma NTrm_fixed_MaxSelCmpLen_testable_aux: 
   forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
