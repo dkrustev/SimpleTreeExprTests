@@ -151,7 +151,7 @@ Fixpoint ntMaxSelCmpLen (nt: NTrm) {struct nt} : nat :=
   match nt with
   | NCons nt1 nt2 => max (ntMaxSelCmpLen nt1) (ntMaxSelCmpLen nt2)
   | NSelCmp sels => length sels
-  | NIfNil sels nt1 nt2 => max (length sels) (max (ntMaxSelCmpLen nt1) (ntMaxSelCmpLen nt2))
+  | NIfNil sels nt1 nt2 => max (S (length sels)) (max (ntMaxSelCmpLen nt1) (ntMaxSelCmpLen nt2))
   | _ => 0
   end.
 
@@ -396,7 +396,7 @@ Qed.
 Lemma ntmvEval_ntEval: forall (t: NTrm) n (s: Subst n) (mv: MVal n),
   match mvMinVarDepth mv with
    | None => True
-   | Some d => ntMaxSelCmpLen t < d
+   | Some d => ntMaxSelCmpLen t <= d
   end ->
   ntEval t (mvSubst s mv) = optBind (ntmvEval t mv) (fun mv => Some (mvSubst s mv)).
 Proof.
@@ -408,22 +408,23 @@ Proof.
     apply optBind_extEq. intro mv1.
     repeat (rewrite optBind_optBind). reflexivity.
   - rename l into sc. simpl. intros.
-    apply scmvEval_scEval; auto. destruct (mvMinVarDepth mv); eauto with arith.
+    apply scmvEval_scEval; auto.
   - rename l into sc.
     (* NIfNil sc t1 t2 *)
     simpl. intros.
     rewrite scmvEval_scEval; auto. 2: destruct (mvMinVarDepth mv); eauto with arith.
     destruct (scmvEval sc mv) eqn: Heq; auto.
     simpl. destruct m.
-    + simpl. apply IHt1. destruct (mvMinVarDepth mv); eauto with arith.
+    + simpl. apply IHt1. destruct (mvMinVarDepth mv); auto.
+      change (max (S (length sc)) (max (ntMaxSelCmpLen t1) (ntMaxSelCmpLen t2)) <= n0) in H.
+      eauto with arith.
     + rename t into i. simpl.
       apply scmvEval_SomeMVVar_mvMinVarDepth in Heq. destruct Heq as [d [Hmvd Hle]].
-      rewrite Hmvd in *. contradict Hle. 
-      rewrite NPeano.Nat.max_lub_lt_iff in H. 
-      (* here is the only reason to have [ntMaxSelCmpLen t < d] 
-        instead of [ntMaxSelCmpLen t <= d] *)
-      destruct H. auto with arith.
-    + simpl. apply IHt2. destruct (mvMinVarDepth mv); eauto with arith.
+      rewrite Hmvd in *. contradict Hle.
+      eauto with arith.
+    + simpl. apply IHt2. destruct (mvMinVarDepth mv); auto.
+      change (max (S (length sc)) (max (ntMaxSelCmpLen t1) (ntMaxSelCmpLen t2)) <= n0) in H.
+      eauto with arith.
 Qed.
 
 (* *** *)
@@ -545,7 +546,7 @@ Qed.
 (* *** *)
 
 Lemma NTrm_fixed_MaxSelCmpLen_testable_aux: 
-  forall d t1 t2, ntMaxSelCmpLen t1 < d -> ntMaxSelCmpLen t2 < d ->
+  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
   forall v, ntEval t1 v <> ntEval t2 v -> exists v1, 
   valDepth v1 <= S d /\ ntEval t1 v1 <> ntEval t2 v1.
 Proof.
@@ -610,7 +611,7 @@ Proof.
 Qed.
 
 Theorem NTrm_fixed_MaxSelCmpLen_testable: 
-  forall d t1 t2, ntMaxSelCmpLen t1 < d -> ntMaxSelCmpLen t2 < d ->
+  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
   (forall v, valDepth v <= S d -> ntEval t1 v = ntEval t2 v) -> 
   forall v, ntEval t1 v = ntEval t2 v.
 Proof.
@@ -623,15 +624,5 @@ Proof.
 Qed.
 
 (* Print Assumptions NTrm_fixed_MaxSelCmpLen_testable. *)
-
-Theorem NTrm_fixed_MaxSelCmpLen_testable': 
-  forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
-  (forall v, valDepth v <= d + 2 -> ntEval t1 v = ntEval t2 v) -> 
-  forall v, ntEval t1 v = ntEval t2 v.
-Proof.
-  intros.
-  apply NTrm_fixed_MaxSelCmpLen_testable with (d:=S d); auto with arith.
-  intros. apply H1. rewrite plus_comm. auto.
-Qed.
 
 
