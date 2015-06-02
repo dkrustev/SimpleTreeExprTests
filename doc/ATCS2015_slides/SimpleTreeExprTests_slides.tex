@@ -1,5 +1,8 @@
 \documentclass{beamer}
 
+\usepackage{amsfonts} % for \mathbb{...}
+\usepackage{stmaryrd} % for \llbracket, ...
+
 \title{Finite Test Sets for a Class of Simple Programs on Binary Trees}
 \author{Dimitur Krustev}
 
@@ -27,10 +30,80 @@
 \subsection{Binary Trees as a Universal Data Structure}
 
 \begin{frame}[Unlabeled Binary Trees]
-
+  \frametitle{Unlabeled Binary Trees}
+	\[ 
+	\text{T ~::=~ \texttt{nil}} ~|~ (\text{T} ~.~ \text{T})
+	\]
+  \begin{itemize}
+    \item Universal data structure 
+    \item built-in pairing (unlike natural numbers, bitstrings, \ldots)
+    \item possible encodings:
+    \begin{itemize}
+	  \item $\lceil \bullet \rceil_{\text{Bool}} ~:~ \text{Bool} \rightarrow \text{T}$
+	  \[
+	    \begin{array}{cc}
+	    \lceil \text{false} \rceil_{\text{Bool}} ~=~ \text{nil}
+	    &
+	    \lceil \text{true} \rceil_{\text{Bool}} ~=~ (\text{nil} ~.~ \text{nil})
+	    \end{array}
+	  \]
+	  
+	  \item $\lceil \bullet \rceil_{\mathbb{N}} ~:~ \mathbb{N} \rightarrow \text{T}$
+	  \[
+	    \begin{array}{cc}
+	    \lceil 0 \rceil_{\mathbb{N}} ~=~ \text{nil}
+	    &
+	    \lceil n+1 \rceil_{\mathbb{N}} ~=~ (\text{nil} ~.~ \lceil n \rceil_{\mathbb{N}})
+	    \end{array}
+	  \]
+	  
+	  \item $\lceil \bullet \rceil_{\text{List}(X)} ~:~ \text{List}(X) \rightarrow \text{T}$
+	  \[
+	    \begin{array}{lcl}
+	    \lceil \lbrack\rbrack \rceil_{\text{List}(X)} & ~=~ & \text{nil}
+	    \\
+	    \lceil \lbrack x_1, x_2, \ldots, x_n \rbrack \rceil_{\text{List}(X)} 
+	      & ~=~ & (\lceil x_1 \rceil_{X} ~.~ \lceil \lbrack x_2, \ldots, x_n \rbrack \rceil_{\text{List}(X)})
+	    \end{array}
+	  \]
+    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \subsection{Simple Programs on Binary Trees}
+
+\begin{frame}
+  \frametitle{Simple Programs on Binary Trees}
+  \[ E ~::=~ \texttt{I} ~|~ \texttt{hd} ~|~ \texttt{tl} ~|~ \texttt{nil}
+       ~|~ \texttt{cons}(E, E)
+       ~|~ E \circ E
+       ~|~ \texttt{ifnil}(E, E, E)  \]
+  \begin{itemize}
+    \item interpretation: functions from trees to trees 
+      (extended with a distinct value $\perp$ denoting undefined interpretation)
+  \end{itemize}
+  \[
+    \begin{array}{lcl}
+    \llbracket \bullet \rrbracket & : & E \rightarrow \text{T} \rightarrow \text{T}_{\perp} \\
+    \llbracket \texttt{I} \rrbracket(x) & = & x \\
+    \llbracket \texttt{hd} \rrbracket(t_1 ~.~ t_2) & = & t_1 \\
+    \llbracket \texttt{tl} \rrbracket(t_1 ~.~ t_2) & = & t_2 \\
+    \llbracket \texttt{nil} \rrbracket(x) & = & \texttt{nil} \\
+    \llbracket \texttt{cons}(e_1, e_2) \rrbracket(x) & = & 
+        (\llbracket e_1 \rrbracket(x) ~.~ \llbracket e_2 \rrbracket(x)) \\
+    \llbracket e_1 \circ e_2 \rrbracket(x) & = & 
+        \llbracket e_1 \rrbracket(\llbracket e_2 \rrbracket(x)) \\
+    \llbracket \texttt{ifnil}(e_1, e_2, e_3) \rrbracket(x) & = & 
+        \llbracket e_2 \rrbracket(x) ~,~ \text{if} ~ \llbracket e_1 \rrbracket(x) = \texttt{nil} \\
+    \llbracket \texttt{ifnil}(e_1, e_2, e_3) \rrbracket(x) & = & 
+        \llbracket e_3 \rrbracket(x) ~,~ \text{if} ~ \llbracket e_1 \rrbracket(x) = (t_1 ~.~ t_2) \\
+    \llbracket \ldots \rrbracket(\ldots) & = & \perp
+    \end{array}  
+  \]
+  \begin{itemize}
+    \item ``simple'' programs: no loops or recursion
+  \end{itemize}
+\end{frame}
 
 \subsection{Program Normal Forms}
 
