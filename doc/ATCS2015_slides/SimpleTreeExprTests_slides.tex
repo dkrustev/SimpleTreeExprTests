@@ -32,14 +32,14 @@
 \begin{frame}[Unlabeled Binary Trees]
   \frametitle{Unlabeled Binary Trees}
 	\[ 
-	\text{T ~::=~ \texttt{nil}} ~|~ (\text{T} ~.~ \text{T})
+	T ~::=~ \texttt{nil} ~|~ (T ~.~ T)
 	\]
   \begin{itemize}
     \item Universal data structure 
     \item built-in pairing (unlike natural numbers, bitstrings, \ldots)
     \item possible encodings:
     \begin{itemize}
-	  \item $\lceil \bullet \rceil_{\text{Bool}} ~:~ \text{Bool} \rightarrow \text{T}$
+	  \item $\lceil \bullet \rceil_{\text{Bool}} ~:~ \text{Bool} \rightarrow T$
 	  \[
 	    \begin{array}{cc}
 	    \lceil \text{false} \rceil_{\text{Bool}} ~=~ \text{nil}
@@ -48,7 +48,7 @@
 	    \end{array}
 	  \]
 	  
-	  \item $\lceil \bullet \rceil_{\mathbb{N}} ~:~ \mathbb{N} \rightarrow \text{T}$
+	  \item $\lceil \bullet \rceil_{\mathbb{N}} ~:~ \mathbb{N} \rightarrow T$
 	  \[
 	    \begin{array}{cc}
 	    \lceil 0 \rceil_{\mathbb{N}} ~=~ \text{nil}
@@ -57,7 +57,7 @@
 	    \end{array}
 	  \]
 	  
-	  \item $\lceil \bullet \rceil_{\text{List}(X)} ~:~ \text{List}(X) \rightarrow \text{T}$
+	  \item $\lceil \bullet \rceil_{\text{List}(X)} ~:~ \text{List}(X) \rightarrow T$
 	  \[
 	    \begin{array}{lcl}
 	    \lceil \lbrack\rbrack \rceil_{\text{List}(X)} & ~=~ & \text{nil}
@@ -84,7 +84,7 @@
   \end{itemize}
   \[
     \begin{array}{lcl}
-    \llbracket \bullet \rrbracket & : & E \rightarrow \text{T} \rightarrow \text{T}_{\perp} \\
+    \llbracket \bullet \rrbracket & : & E \rightarrow T \rightarrow T_{\perp} \\
     \llbracket \texttt{I} \rrbracket(x) & = & x \\
     \llbracket \texttt{hd} \rrbracket(t_1 ~.~ t_2) & = & t_1 \\
     \llbracket \texttt{tl} \rrbracket(t_1 ~.~ t_2) & = & t_2 \\
