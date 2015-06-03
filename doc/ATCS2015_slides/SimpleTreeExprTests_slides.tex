@@ -123,6 +123,33 @@
 
 \subsection{Program Classes by Composition Length}
 
+\begin{frame}
+  \frametitle{Program Classes by Composition Length}
+  \[\begin{array}{lclr}
+  E^{nf}_N & ~::=~ & \texttt{nil} ~|~ \texttt{cons}(E^{nf}_N, E^{nf}_N) & \\
+         &       & ~|~ \mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n & (0 \le n \le N) \\
+         &       & ~|~ \texttt{ifnil}(\mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n, E^{nf}_N, E^{nf}_N) & (0 \le n < N) \\
+  \mathit{Sel} & ~::=~ & \texttt{hd} ~|~ \texttt{tl} & 
+  \end{array}
+  \]
+  \pause
+  \begin{itemize}
+    \item $E^{nf}_N \subset E^{nf}_{N+1}$, $\bigcup_{N \in \mathbb{N}} E^{nf}_N = E^{nf}$
+  \pause  
+    \item \textbf{Main result}:
+    $\forall N \in \mathbb{N}, \forall e_1, e_2 \in E^{nf}_N,$ 
+    $(\forall t \in T_{N+1}, \llbracket e_1 \rrbracket (t) = \llbracket e_2 \rrbracket (t))$
+    $\rightarrow \forall t \in T, \llbracket e_1 \rrbracket (t) = \llbracket e_2 \rrbracket (t)$, where:
+  \end{itemize}
+    \[\begin{array}{lcl}
+    \mathit{depth} & ~:~ & T \rightarrow \mathbb{N} \\
+    \mathit{depth}(\texttt{nil}) & ~=~ & 0 \\
+    \mathit{depth}(t_1 ~.~ t_2) & ~=~ & 1 + \mathit{max}(\mathit{depth}(t_1), \mathit{depth}(t_2)) \\
+    T_{N} & ~=~ & \{t \in T ~|~ \mathit{depth}(t) \le N \} 
+    \end{array}
+    \]
+\end{frame}
+
 \subsection{Tree Decomposition by Depth}
 
 \subsection{Existence of Finite Test Sets}
