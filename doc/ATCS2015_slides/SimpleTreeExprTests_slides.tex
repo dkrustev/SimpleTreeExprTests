@@ -107,6 +107,18 @@
 
 \subsection{Program Normal Forms}
 
+\begin{frame}
+  \frametitle{Program Normal Forms}
+  \[\begin{array}{lclr}
+  E^{nf} & ~::=~ & \texttt{nil} ~|~ \texttt{cons}(E^{nf}, E^{nf}) & \\
+         &       & ~|~ \mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n & (n \ge 0) \\
+         &       & ~|~ \texttt{ifnil}(\mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n, E^{nf}, E^{nf}) & (n \ge 0) \\
+  \mathit{Sel} & ~::=~ & \texttt{hd} ~|~ \texttt{tl} & 
+  \end{array}
+  \]
+  
+\end{frame}
+
 \section{Finite Test Sets for Simple Programs}
 
 \subsection{Program Classes by Composition Length}
