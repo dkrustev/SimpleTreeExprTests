@@ -3,6 +3,9 @@
 \usepackage{amsfonts} % for \mathbb{...}
 \usepackage{stmaryrd} % for \llbracket, ...
 
+\usepackage{tikz}
+\usetikzlibrary{calc} % for (let \p1= ... in ...)
+
 \title{Finite Test Sets for a Class of Simple Programs on Binary Trees}
 \author{Dimitur Krustev}
 
@@ -153,6 +156,30 @@
 \end{frame}
 
 \subsection{Tree Decomposition by Depth}
+
+\begin{frame}[fragile]
+  \frametitle{Tree Decomposition by Depth}
+  \begin{tikzpicture}[level/.style={sibling distance=60mm/#1}]
+  \node[circle,draw] (root){$\bullet$}
+    child {node (t1){$\vdots$}}
+    child {node[circle,draw] (t2){$\bullet$}
+      child {node[rectangle,draw,rounded corners] (t21){$\texttt{nil}$}}
+      child {node (t22){$\vdots$}
+        child {node[circle,draw] (t221){\only<1>{$\bullet$} \only<2>{$t_i$}}
+          child {node (t2211){$\vdots$}}
+          child {node (t2212){$\vdots$}}
+        }
+        child {node[circle,draw] (t222){\only<1>{$\bullet$} \only<2>{$t_j$}}
+          child {node (t2221){$\vdots$}}
+          child {node (t2222){$\vdots$}}
+        }
+      }
+    };
+  \draw [dotted] let \p1=(t1), \p2=(root), \p3=(t2222) in (\x1-5mm, \y2) -- (\x3+10mm, \y2);
+  \draw [dotted] let \p1=(t1), \p2=(t221), \p3=(t2222) in (\x1-5mm, \y2) -- (\x3+10mm, \y2);
+  \draw [<->] let \p1=(root), \p2=(t222), \p3=(t2222) in (\x3+5mm, \y1) -- node[right]{d} (\x3+5mm, \y2);
+  \end{tikzpicture}
+\end{frame}
 
 \subsection{Existence of Finite Test Sets}
 
