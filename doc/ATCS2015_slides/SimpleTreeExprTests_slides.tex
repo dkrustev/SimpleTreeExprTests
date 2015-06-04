@@ -181,6 +181,32 @@
   \end{tikzpicture}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Tree Decomposition by Depth (cont.)}
+  \begin{itemize}
+    \item Trees with Variables:
+	  \[
+		T_X ~::=~ \texttt{nil} ~|~ (T_X ~.~ T_X) ~|~ x \qquad (x \in X)
+	  \]
+    \item Decomposition function: 
+      $\mathit{cutAt} ~:~ \mathbb{N} \times T \rightarrow (X \rightarrow T) \times T_X$,
+      $cutAt(d, t) = (\sigma, t_x)$, where:
+      \begin{itemize}
+	    \item $t_x$ is the tree $t$ with all nodes at depth $d$ replaced by variables from $X$
+	    \item $\sigma$ is a substitution assigning the corresponding subtree to each of these variables
+	  \end{itemize}
+	\item Correctness of decomposition: 
+	  $\forall d \in \mathbb{N}, \forall t \in T, \forall \sigma, \forall t_x,$
+	  $cutAt(d, t) = (\sigma, t_x) \rightarrow t_x \sigma = t$, where:
+	  \[\begin{array}{lcl}
+	    \texttt{nil} \sigma & = & \texttt{nil} \\
+	    (t_1 ~.~ t_2) \sigma & = & (t_1 \sigma ~.~ t_2 \sigma) \\
+	    x \sigma & = & \sigma(x)
+	  \end{array}
+	  \]
+  \end{itemize}
+\end{frame}
+
 \subsection{Existence of Finite Test Sets}
 
 \section{Applications, Future Work}
