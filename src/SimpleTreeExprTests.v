@@ -26,6 +26,18 @@ Proof.
   destruct x; auto.
 Qed.
 
+Lemma optBind_option_map: forall X Y Z (f: X -> Y) (o: option X) (g: Y -> option Z),
+  optBind (option_map f o) g = optBind o (fun x => g (f x)).
+Proof.
+  destruct o; auto.
+Qed.
+
+Lemma option_map_optBind: forall X Y Z (f: Y -> Z) (o: option X) (g: X -> option Y),
+  option_map f (optBind o g) = optBind o (fun x => option_map f (g x)).
+Proof.
+  destruct o; auto.
+Qed.
+
 Lemma optBind_extEq: forall X Y (f g: X -> option Y) x, 
   (forall x, f x = g x) -> optBind x f = optBind x g.
 Proof.
@@ -365,6 +377,9 @@ Fixpoint ntmvEval (t: NTrm) {struct t} : forall {n}, MVal n -> option (MVal n) :
     end
   end.
 
+Definition mvSubst' {n} (s: Subst n) (omv: option (MVal n)) : option Val :=
+  option_map (mvSubst s) omv.
+
 (* *** *)
 (* Key lemmas about commuting (extended) evaluation and hole-filling
   when selector-composition length <= min hole depth: *)
@@ -405,15 +420,17 @@ Lemma ntmvEval_ntEval: forall (t: NTrm) n (s: Subst n) (mv: MVal n),
    | None => True
    | Some d => ntMaxSelCmpLen t <= d
   end ->
-  ntEval t (mvSubst s mv) = optBind (ntmvEval t mv) (fun mv => Some (mvSubst s mv)).
+  ntEval t (mvSubst s mv) = mvSubst' s (ntmvEval t mv).
 Proof.
   induction t; auto.
   - (* NCons t1 t2 *) simpl. intros.
     rewrite IHt1; auto. 2: destruct (mvMinVarDepth mv); eauto with arith.
     rewrite IHt2; auto. 2: destruct (mvMinVarDepth mv); eauto with arith.
-    repeat (rewrite optBind_optBind). simpl.
+    unfold mvSubst'.
+    rewrite optBind_option_map. rewrite option_map_optBind.
     apply optBind_extEq. intro mv1.
-    repeat (rewrite optBind_optBind). reflexivity.
+    rewrite optBind_option_map. rewrite option_map_optBind.
+    reflexivity.
   - rename l into sc. simpl. intros.
     apply scmvEval_scEval; auto.
   - rename l into sc.
@@ -571,7 +588,8 @@ Proof.
   rewrite ntmvEval_ntEval in H1. 
   Focus 2. 
     apply vCutAt_mvMinVarDepth in Heqx. 
-    destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+    destruct Heqx as [Heq | Heq]; rewrite Heq; auto.
+  unfold mvSubst' in *. 
   apply optBind_neq_funEq in H1.
   destruct (ntmvEval t1 mv) as [mv1|] eqn: Heq1;
   destruct (ntmvEval t2 mv) as [mv2|] eqn: Heq2; try congruence.
