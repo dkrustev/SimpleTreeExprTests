@@ -395,9 +395,8 @@ Proof.
   rename a into sel. simpl. intros. revert sel sc IHsc s H. destruct mv; auto.
   - (* MVVar t *) rename t into i. simpl. intros. contradict H. auto with arith.
   - (* MVCons mv1 mv2 *) simpl. intros. destruct sel.
-    + apply IHsc; auto. destruct (mvMinVarDepth mv1).
-      * destruct (mvMinVarDepth mv2); eauto with arith. 
-      * constructor.
+    + apply IHsc; auto. destruct (mvMinVarDepth mv1); auto.
+      destruct (mvMinVarDepth mv2); eauto with arith. 
     + apply IHsc; auto. destruct (mvMinVarDepth mv2); auto.
       destruct (mvMinVarDepth mv1); eauto with arith.
 Qed.
