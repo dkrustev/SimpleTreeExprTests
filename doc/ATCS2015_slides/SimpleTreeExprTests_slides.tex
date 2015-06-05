@@ -195,7 +195,7 @@
 	    \item $t_x$ is the tree $t$ with all nodes at depth $d$ replaced by variables from $X$
 	    \item $\sigma$ is a substitution assigning the corresponding subtree to each of these variables
 	  \end{itemize}
-	\item Correctness of decomposition: 
+	\item Correctness of decomposition (\texttt{vCutAt\_mvSubst}): 
 	  $\forall d \in \mathbb{N}, \forall t \in T, \forall \sigma, \forall t_x,$
 	  $cutAt(d, t) = (\sigma, t_x) \rightarrow t_x \sigma = t$, where:
 	  \[\begin{array}{lcl}
@@ -208,6 +208,37 @@
 \end{frame}
 
 \subsection{Existence of Finite Test Sets}
+
+\begin{frame}
+  \frametitle{Conditionally Commuting Evaluation and Recomposition}
+  \begin{itemize}
+    \item program evaluation straightforwardly extended to trees with variables
+      (same rules):
+      $\llbracket e \rrbracket_X ~:~ E \rightarrow T_X \rightarrow T_{X_\perp}$
+    \item Key lemma (\texttt{ntmvEval\_ntEval}) -- we can switch the order of evaluation 
+      and variable substitution, \emph{provided} no risk of hitting upon a variable
+      during evaluation:
+      $\forall N \in \mathbb{N}, \forall e \in E^{nf}_N, \forall X,$
+      $\forall \sigma : X \rightarrow T, \forall t_x \in T_X,$
+      $N \le \textit{minVarDepth}(t_x) \rightarrow$
+      $\llbracket e \rrbracket(t_x\sigma) = (\llbracket e \rrbracket_X(t_x))\sigma$
+      \begin{itemize}
+        \item where:
+        \[\begin{array}{lcl}
+        \textit{minVarDepth}(\texttt{nil}) & = & \infty \\
+        \textit{minVarDepth}(t_1 ~.~ t_2) & = & 1 + \textit{min}(\textit{minVarDepth}(t_1), \\
+                                          &   &  \textit{minVarDepth}(t_2)) \\
+        \textit{minVarDepth}(x) & = & 0
+        \end{array}
+        \]
+        \item proof: induction on the structure of $e$
+          \begin{itemize}
+            \item condition $N \le \textit{minVarDepth}(t_x)$ used in key sub-cases
+              to derive a contradiction
+          \end{itemize}
+      \end{itemize}
+  \end{itemize}
+\end{frame}
 
 \section{Applications, Future Work}
 
