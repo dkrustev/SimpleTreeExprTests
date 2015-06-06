@@ -305,6 +305,25 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Test Set Size Bound -- Tight}
+  \begin{itemize}
+    \item We cannot substantially improve the size of the test set 
+    (if we consider programs in the whole class $E^{nf}_N$ for some $N$).
+    More specifically: 
+    $\forall N, \exists e_1, e_2 \in E^{nf}_{N+1}$, s.t.
+    $\forall t \in T_{N+1}, \llbracket e_1 \rrbracket (t) = \llbracket e_2 \rrbracket (t)$ and
+    $\exists t \in T, \llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t)$
+	\item Proof hint: it suffices to take:
+	  \[\begin{array}{lclr}
+	  e_1 & = & \texttt{hd} \circ e & \\
+	  e_2 & = & \texttt{tl} \circ e, & \text{where:} \\
+	  e & = & \underbrace{\texttt{hd} \circ \ldots \circ \texttt{hd}}_{N \text{ times}}
+	  \end{array}
+	  \]      
+  \end{itemize}
+\end{frame}
+
 \section{Applications, Future Work}
 
 \subsection{Deciding Program Equivalence}
@@ -313,6 +332,6 @@
 
 \subsection{Testing a Turing-complete Language}
 
-\subsection{Related Work} % ???
+\subsection{Related Work, Conclusions} % ???
 
 \end{document}
