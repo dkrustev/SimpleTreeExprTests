@@ -289,6 +289,12 @@
 			  ensures that $N \le \textit{minVarDepth}(t_x)$
 	      \end{itemize}  
 	    \item so $\llbracket e_1 \rrbracket_X (t_x) \neq \llbracket e_2 \rrbracket_X (t_x)$
+	    \item most interesting case is when both evaluations are $\neq \perp$
+	    \item then (by \texttt{mvSubst\_discrim}) we can find $\sigma'$ s.t.
+	      all $\sigma'(x) \in T_1$ and 
+	      $(\llbracket e_1 \rrbracket_X (t_x))\sigma' \neq (\llbracket e_2 \rrbracket_X (t_x)) \sigma'$
+	    \item let $t' = t_x \sigma'$; we have $t' \in T_{N+1}$ and 
+	      $\llbracket e_1 \rrbracket (t') \neq \llbracket e_2 \rrbracket (t')$. \qed
 	  \end{itemize}
   \end{itemize}
 \end{frame}
