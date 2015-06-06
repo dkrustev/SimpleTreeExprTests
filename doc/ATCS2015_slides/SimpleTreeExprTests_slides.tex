@@ -2,6 +2,7 @@
 
 \usepackage{amsfonts} % for \mathbb{...}
 \usepackage{stmaryrd} % for \llbracket, ...
+\usepackage{hyperref} % for \url
 
 \usepackage{tikz}
 \usetikzlibrary{calc} % for (let \p1= ... in ...)
@@ -341,9 +342,88 @@
   \end{itemize}
 \end{frame}
 
-% https://oeis.org/A003095 - Number of binary trees of height less than n
+\begin{frame}
+  \frametitle{Decidable Equivalence -- Complexity}
+  \begin{itemize}
+    \item existing algorithm:
+    \begin{itemize}
+      \item unfortunately, $a_N = | T_N |$ grows very quickly:
+      \item $a_{N+1} = a_N^2 + 1$; according to \url{https://oeis.org/A003095}, 
+        $a_N \asymp c^{2^n}$ where $c = 1.2259\ldots$
+      \item hence, super-exponential complexity
+    \end{itemize}
+    \item idea for improvement (\emph{future work}):
+    \begin{itemize}
+      \item define more fine-grained classes of programs, based on sets of
+        actually occurring selector compositions:
+	  \[\begin{array}{lcl}
+	  E^{nf}_S & ~::=~ & \texttt{nil} ~|~ \texttt{cons}(E^{nf}_S, E^{nf}_S) \\
+	         &       & ~|~ \mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n \\
+	         &       & \text{ (where } \mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n \in S \text{)} \\
+	         &       & ~|~ \texttt{ifnil}(\mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n, E^{nf}_S, E^{nf}_S) \\
+	         &       & \text{ (where } \mathit{Sel}_1 \circ \ldots \circ \mathit{Sel}_n \in S \text{)} \\
+	  \mathit{Sel} & ~::=~ & \texttt{hd} ~|~ \texttt{tl} 
+	  \end{array}
+	  \]
+	  \item try to re-develop the presented method for these new classes, hopefully
+	    resulting in asymptotically smaller test sets
+    \end{itemize}
+  \end{itemize}
+\end{frame}
 
 \subsection{Testing a Turing-complete Language}
+
+\begin{frame}
+  \frametitle{Tests for a Turing-complete Language?}
+  \begin{itemize}
+    \item our simple programs are far from Turing-complete:
+    \begin{itemize}
+      \item operations on potentially unbounded data structures
+      \item conditional constructions
+      \item BUT \ldots no loops/recursion
+    \end{itemize}
+    \item possible idea -- 
+      define a tiny imperative language on binary trees:
+      \[\begin{array}{lcl}
+      P & ::= & \texttt{x := (} E \texttt{)(x)} ~|~ P \texttt{;} P \\
+        &     & |~ \texttt{while (} E \texttt{)(x) do } P \texttt{ end}
+      \end{array}
+      \]
+    \begin{itemize}
+      \item a single variable (enough, as we have built-in pairing)
+        -- serves as both an input and an output variable
+      \item we re-use the class $E$ of expressions on binary trees inside
+        assignment instructions and as conditions in while loops
+      \item hopefully obvious semantics
+      \item Turing-complete(!)
+    \end{itemize}  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tests for a Turing-complete Language? (cont.)}
+  \begin{itemize}
+    \item actually, a single while loop for the whole program is enough
+      -- we can bring any program $p \in P$ into the following form:
+      \[\begin{array}{l}
+      \texttt{x := (} e_1 \texttt{)(x);} \\
+      \texttt{while (} e_2 \texttt{)(x) do} \\
+      \texttt{    x := (} e_3 \texttt{)(x);} \\
+      \texttt{end;} \\
+      \texttt{x := (} e_4 \texttt{)(x);}
+      \end{array} 
+      \]
+    \item furthermore, $e_1, e_2$, and $e_4$ can be fixed expressions,
+      and only $e_3$ will depend on $p$
+    (analogous to Kleene's normal form for general recursive functions)
+    \item idea: use tests for $e_3$ in order to test $p$
+    \item \emph{future work:}
+    \begin{itemize}
+      \item how exactly to turn tests for $e_3$ into tests for $p$?
+      \item what subclass of programs in $P$ (containing $p$) is covered by such tests?
+    \end{itemize}
+  \end{itemize}
+\end{frame}
 
 \subsection{Related Work, Conclusions} % ???
 
