@@ -240,6 +240,36 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Trees with Variables Distinguishable by Shallow Substitutions}
+  \begin{itemize}
+    \item Another key lemma (\texttt{mvSubst\_discrim}) -- different trees 
+      with variables can be distinguished by substituting trees of depth $\le 1$
+      for the variables:
+      $\forall X, \forall t_1, t_2 \in T_X, t_1 \neq t_2 \rightarrow$
+      $\exists \sigma, (\forall x\in X, \mathit{depth}(\sigma(x)) \le 1)$
+      $\wedge t_1 \sigma \neq t_2 \sigma$
+    \begin{itemize}
+      \item Proof sketch: there must be at least one pair of corresponding 
+        subtrees $t_1'$ and $t_2'$ with different root nodes
+      \begin{itemize}
+        \item if neither root is a variable, then the trivial substitution will do:
+          $\sigma(x) = \texttt{nil}, \forall x \in X$
+        \item if only one root is a variable -- say $x$ -- we select
+          $\sigma(x) = \texttt{nil}$ or $\sigma(x) = (\texttt{nil} ~.~ \texttt{nil})$
+          depending on the kind of the other root
+        \item if $t_1' = x, t_2' = y$, then we can use:
+          \[\begin{array}{lclr}
+          \sigma(x) & = & \texttt{nil} & \\
+          \sigma(y) & = & (\texttt{nil} ~.~ \texttt{nil}) & \\
+          \sigma(z) & = & \texttt{nil} & \forall z \in X, z \neq x, z \neq y
+          \end{array}
+          \]
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
 \section{Applications, Future Work}
 
 \subsection{Deciding Program Equivalence}
