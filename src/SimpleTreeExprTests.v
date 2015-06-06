@@ -573,21 +573,21 @@ Qed.
 (* *** *)
 (* Main result about discriminating inequivalent programs by a finite test set: *)
 
+Local Ltac solveBy_vCutAt_mvMinVarDepth :=
+  match goal with [H: vCutAt _ _ = existT _ _ _ |- _] => 
+    apply vCutAt_mvMinVarDepth in H;
+    destruct H as [Heq | Heq]; rewrite Heq; auto
+  end. 
+
 Lemma NTrm_fixed_MaxSelCmpLen_testable_aux: 
   forall d t1 t2, ntMaxSelCmpLen t1 <= d -> ntMaxSelCmpLen t2 <= d ->
-  forall v, ntEval t1 v <> ntEval t2 v -> exists v1, 
-  valDepth v1 <= S d /\ ntEval t1 v1 <> ntEval t2 v1.
+  (exists v, ntEval t1 v <> ntEval t2 v) -> 
+  exists v1, valDepth v1 <= S d /\ ntEval t1 v1 <> ntEval t2 v1.
 Proof.
-  intros. remember (vCutAt d v) as x. destruct x as [n [s mv]]. symmetry in Heqx.
+  intros. destruct H1 as [v H1].
+  remember (vCutAt d v) as x. destruct x as [n [s mv]]. symmetry in Heqx.
   replace v with (mvSubst s mv) in H1. 2: apply vCutAt_mvSubst with (d:=d); auto.
-  rewrite ntmvEval_ntEval in H1. 
-  Focus 2. 
-    apply vCutAt_mvMinVarDepth in Heqx. 
-    destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
-  rewrite ntmvEval_ntEval in H1. 
-  Focus 2. 
-    apply vCutAt_mvMinVarDepth in Heqx. 
-    destruct Heqx as [Heq | Heq]; rewrite Heq; auto.
+  repeat (rewrite ntmvEval_ntEval in H1; try solveBy_vCutAt_mvMinVarDepth).
   unfold mvSubst' in *. 
   apply optBind_neq_funEq in H1.
   destruct (ntmvEval t1 mv) as [mv1|] eqn: Heq1;
@@ -600,42 +600,21 @@ Proof.
     + apply mvDepth_vCutAt_le in Heqx.
       transitivity (1 + mvDepth mv); auto with arith.
       apply valDepth_mvSubst_le; auto.
-    + rewrite ntmvEval_ntEval. 
-      Focus 2. 
-        apply vCutAt_mvMinVarDepth in Heqx. 
-        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
-      rewrite ntmvEval_ntEval. 
-      Focus 2. 
-        apply vCutAt_mvMinVarDepth in Heqx. 
-        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+    + repeat (rewrite ntmvEval_ntEval; try solveBy_vCutAt_mvMinVarDepth).
       rewrite Heq1. rewrite Heq2. simpl. congruence.
   - (* Some mv1, None *)
     exists (mvSubst (fun _ => VNil) mv). split.
     + apply mvDepth_vCutAt_le in Heqx.
       transitivity (1 + mvDepth mv); auto with arith.
       apply valDepth_mvSubst_le; auto.
-    + rewrite ntmvEval_ntEval.
-      Focus 2. 
-        apply vCutAt_mvMinVarDepth in Heqx. 
-        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
-      rewrite ntmvEval_ntEval.
-      Focus 2. 
-        apply vCutAt_mvMinVarDepth in Heqx. 
-        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+    + repeat (rewrite ntmvEval_ntEval; try solveBy_vCutAt_mvMinVarDepth).
       rewrite Heq1. rewrite Heq2. simpl. congruence.
   - (* None, Some mv2 *)
     exists (mvSubst (fun _ => VNil) mv). split.
     + apply mvDepth_vCutAt_le in Heqx.
       transitivity (1 + mvDepth mv); auto with arith.
       apply valDepth_mvSubst_le; auto.
-    + rewrite ntmvEval_ntEval.
-      Focus 2. 
-        apply vCutAt_mvMinVarDepth in Heqx. 
-        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
-      rewrite ntmvEval_ntEval. 
-      Focus 2. 
-        apply vCutAt_mvMinVarDepth in Heqx. 
-        destruct Heqx as [Heq | Heq]; rewrite Heq; auto. 
+    + repeat (rewrite ntmvEval_ntEval; try solveBy_vCutAt_mvMinVarDepth).
       rewrite Heq1. rewrite Heq2. simpl. congruence.
 Qed.
 
@@ -646,8 +625,9 @@ Theorem NTrm_fixed_MaxSelCmpLen_testable:
 Proof.
   intros d t1 t2 HscLen1 HscLen2 HallTstEq v.
   destruct (option_eq_dec Val_eq_dec (ntEval t1 v) (ntEval t2 v)) as [Heq | Hneq]; auto.
+  assert (Hneq': exists v, ntEval t1 v <> ntEval t2 v); eauto.
   contradict HallTstEq. intro HallTstEq. 
-  pose (H := NTrm_fixed_MaxSelCmpLen_testable_aux _ _ _ HscLen1 HscLen2 _ Hneq).
+  pose (H := NTrm_fixed_MaxSelCmpLen_testable_aux _ _ _ HscLen1 HscLen2 Hneq').
   destruct H as [v1 [Hdepth Hneq1]].
   specialize (HallTstEq _ Hdepth). congruence.
 Qed.
