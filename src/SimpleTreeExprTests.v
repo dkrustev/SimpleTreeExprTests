@@ -44,11 +44,13 @@ Proof.
   destruct x; auto. intros. simpl. auto.
 Qed.
 
+(*
 Lemma optBind_neq_funEq: forall X Y (o1 o2: option X) (f: X -> option Y),
   optBind o1 f <> optBind o2 f -> o1 <> o2.
 Proof.
   destruct o1; destruct o2; simpl; congruence.
 Qed.
+*)
   
 (* *** *)
 
@@ -588,14 +590,15 @@ Proof.
   remember (vCutAt d v) as x. destruct x as [n [s mv]]. symmetry in Heqx.
   replace v with (mvSubst s mv) in H1. 2: apply vCutAt_mvSubst with (d:=d); auto.
   repeat (rewrite ntmvEval_ntEval in H1; try solveBy_vCutAt_mvMinVarDepth).
-  unfold mvSubst' in *. 
-  apply optBind_neq_funEq in H1.
+  destruct (option_eq_dec MVal_eq_dec (ntmvEval t1 mv) (ntmvEval t2 mv)) as [?|Hneq];
+    try congruence.
+  clear H1.
   destruct (ntmvEval t1 mv) as [mv1|] eqn: Heq1;
   destruct (ntmvEval t2 mv) as [mv2|] eqn: Heq2; try congruence.
   - (* Some mv1, Some mv2 *) 
-    destruct (MVal_eq_dec mv1 mv2) as [? | Hneq]; try congruence. clear H1.
-    pose (HexistsSubst := mvSubst_discrim _ _ _ Hneq).
-    destruct HexistsSubst as [s1 [Hdepth Hneq1]].
+    destruct (MVal_eq_dec mv1 mv2) as [? | Hneq1]; try congruence. clear Hneq.
+    pose (HexistsSubst := mvSubst_discrim _ _ _ Hneq1).
+    destruct HexistsSubst as [s1 [Hdepth Hneq2]].
     exists (mvSubst s1 mv). split.
     + apply mvDepth_vCutAt_le in Heqx.
       transitivity (1 + mvDepth mv); auto with arith.
