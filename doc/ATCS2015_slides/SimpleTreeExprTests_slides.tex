@@ -328,6 +328,19 @@
 
 \subsection{Deciding Program Equivalence}
 
+\begin{frame}
+  \frametitle{Application: Decidable Equivalence}
+  \begin{itemize}
+    \item given 2 arbitrary simple programs, $e_1, e_2 \in E$, we can:
+    \item convert them to normal form
+    \item determine their maximum composition lengths: $e_1 \in E^{nf}_N$, $e_2 \in E^{nf}_M$
+    \item then $e_1, e_2 \in E^{nf}_K$, where $K = {\mathit{max}(N, M)}$, and we can use the
+      existence of a common finite test set for both:
+    \item if $e_1$ and $e_2$ agree on all $t \in T_{K+1}$, then, by
+      our main result, they are equivalent
+  \end{itemize}
+\end{frame}
+
 % https://oeis.org/A003095 - Number of binary trees of height less than n
 
 \subsection{Testing a Turing-complete Language}
