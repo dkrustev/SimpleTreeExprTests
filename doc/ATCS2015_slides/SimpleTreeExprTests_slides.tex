@@ -277,22 +277,28 @@
       $\forall N, \forall e_1, e_2 \in E^{nf}_N,$
       $(\exists t \in T, \llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t))$
       $\rightarrow$
-      $(\exists t \in T_{N+1}, \llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t))$
+      $\exists t \in T_{N+1}, \llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t)$
+      \pause
 	  \begin{itemize}
 	    \item Proof sketch: let $t \in T$, s.t. $\llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t)$
+	    \pause
 	    \item let $(\sigma, t_x) = \mathit{cutAt}(N, t)$
 	    \item then $\llbracket e_1 \rrbracket (t_x \sigma) \neq \llbracket e_2 \rrbracket (t_x \sigma)$
+	    \pause
 	    \item commute evaluation and substitution: 
 	      $(\llbracket e_1 \rrbracket_X (t_x))\sigma \neq (\llbracket e_2 \rrbracket_X (t_x)) \sigma$
 	      \begin{itemize}
 	        \item possible because $\mathit{cutAt}(N, t) = (\sigma, t_x)$
 			  ensures that $N \le \textit{minVarDepth}(t_x)$
 	      \end{itemize}  
+	    \pause
 	    \item so $\llbracket e_1 \rrbracket_X (t_x) \neq \llbracket e_2 \rrbracket_X (t_x)$
+	    \pause
 	    \item most interesting case is when both evaluations are $\neq \perp$
 	    \item then (by \texttt{mvSubst\_discrim}) we can find $\sigma'$ s.t.
 	      all $\sigma'(x) \in T_1$ and 
 	      $(\llbracket e_1 \rrbracket_X (t_x))\sigma' \neq (\llbracket e_2 \rrbracket_X (t_x)) \sigma'$
+	    \pause
 	    \item let $t' = t_x \sigma'$; we have $t' \in T_{N+1}$ and 
 	      $\llbracket e_1 \rrbracket (t') \neq \llbracket e_2 \rrbracket (t')$. \qed
 	  \end{itemize}
