@@ -270,6 +270,29 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+  \frametitle{Existence of Finite Test Sets}
+  \begin{itemize}
+    \item Main result, in contrapositive form (\texttt{NTrm\_fixed\_MaxSelCmpLen\_testable\_aux}):
+      $\forall N, \forall e_1, e_2 \in E^{nf}_N,$
+      $(\exists t \in T, \llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t))$
+      $\rightarrow$
+      $(\exists t \in T_{N+1}, \llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t))$
+	  \begin{itemize}
+	    \item Proof sketch: let $t \in T$, s.t. $\llbracket e_1 \rrbracket (t) \neq \llbracket e_2 \rrbracket (t)$
+	    \item let $(\sigma, t_x) = \mathit{cutAt}(N, t)$
+	    \item then $\llbracket e_1 \rrbracket (t_x \sigma) \neq \llbracket e_2 \rrbracket (t_x \sigma)$
+	    \item commute evaluation and substitution: 
+	      $(\llbracket e_1 \rrbracket_X (t_x))\sigma \neq (\llbracket e_2 \rrbracket_X (t_x)) \sigma$
+	      \begin{itemize}
+	        \item possible because $\mathit{cutAt}(N, t) = (\sigma, t_x)$
+			  ensures that $N \le \textit{minVarDepth}(t_x)$
+	      \end{itemize}  
+	    \item so $\llbracket e_1 \rrbracket_X (t_x) \neq \llbracket e_2 \rrbracket_X (t_x)$
+	  \end{itemize}
+  \end{itemize}
+\end{frame}
+
 \section{Applications, Future Work}
 
 \subsection{Deciding Program Equivalence}
