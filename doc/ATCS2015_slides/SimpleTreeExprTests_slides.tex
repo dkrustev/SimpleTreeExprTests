@@ -337,8 +337,7 @@
     \item determine their maximum composition lengths: $e_1 \in E^{nf}_N$, $e_2 \in E^{nf}_M$
     \item then $e_1, e_2 \in E^{nf}_K$, where $K = {\mathit{max}(N, M)}$, and we can use the
       existence of a common finite test set for both:
-    \item if $e_1$ and $e_2$ agree on all $t \in T_{K+1}$, then, by
-      our main result, they are equivalent
+    \item $e_1$ and $e_2$ are equivalent iff they agree on all $t \in T_{K+1}$
   \end{itemize}
 \end{frame}
 
@@ -425,6 +424,36 @@
   \end{itemize}
 \end{frame}
 
-\subsection{Related Work, Conclusions} % ???
+\subsection{Related Work, Conclusions} 
+
+\begin{frame}
+  \frametitle{Related Work}
+  \begin{itemize}
+    \item programs on binary trees
+	  \begin{itemize}
+	    \item binary trees as an universal data structure -- Lisp, McCarthy (1958)
+	    \item variable-free programs -- FP, Backus (1978)
+	    \item binary-tree based programs used a model of computations in 
+	      many works by Neil D. Jones and his team (e.g. Jones' book 
+	      on computability and complexity (1997))
+	    \item Feferman's foundational system $FS_0$ (1989)
+	  \end{itemize}
+	\item finite complete test sets for restricted classes of programs
+	  \begin{itemize}
+	    \item programs computing polynomials
+	      \begin{itemize}
+	        \item $p \in \mathbb{Z}\lbrack x_1, \ldots, x_n\rbrack$ (known degree) --
+	          Howden (1976), DeMillo \& Lipton (1978), \ldots, McBride (2015)
+	        \item $p \in \mathbb{N}\lbrack x_1, \ldots, x_n\rbrack$ (any degree) --
+	          K. Govindarajan (1995); 
+	          also extended with $\mathit{sg}, \overline{\mathit{sg}}$ --
+	          J. Maolepszy et al. (1997)
+	      \end{itemize}
+	    \item simple programs on $\mathbb{N}$ 
+	      ($0$, $x+1$, $\pi^n_i$, $x+y$, $x\dot{-}1$, $\texttt{if0}$, $x \texttt{ div } k$, $x \texttt{ mod } k$)
+	      -- D. Tsichritzis (1970)
+	  \end{itemize}
+  \end{itemize}
+\end{frame}
 
 \end{document}
