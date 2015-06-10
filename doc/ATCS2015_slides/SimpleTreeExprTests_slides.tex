@@ -31,6 +31,31 @@
 
 \section{Preliminaries}
 
+\subsection{Adequate Test Sets}
+
+\begin{frame}
+  \frametitle{Some Notions Related to Testing (Budd, Angluin, 1982)}
+  \begin{itemize}
+    \item sets of programs, $P$, and data, $D$, with an interpretation (evaluation) function 
+      $\llbracket \bullet \rrbracket : P \rightarrow D \rightarrow D$
+    \item for a given program $p \in P$, a \emph{program neighborhood} $\Phi(p)$ -- any
+      $\Phi(p) \subseteq P$ s.t. $p \in \Phi(p)$
+    \item a test set $T \subset D$ is \emph{adequate} for $p$ (\emph{relative} to $\Phi$)
+      if for any $q \in \Phi(p)$:
+      \[(\forall d \in D, \llbracket p \rrbracket (d) = \llbracket q \rrbracket (d))
+        \leftrightarrow 
+        (\forall t \in T, \llbracket p \rrbracket (d) = \llbracket q \rrbracket (d))
+      \]
+    \item finding an adequate test set is often non-computable:
+      \begin{itemize}
+        \item if $\Phi(p)$ are all programs in any Turing-complete language
+        \item \ldots or all primitive recursive programs on $\mathbb{N}$
+        \item \ldots or even all programs computing polynomials with integer coefficients 
+        \item \ldots
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
 \subsection{Binary Trees as a Universal Data Structure}
 
 \begin{frame}[Unlabeled Binary Trees]
@@ -74,7 +99,7 @@
   \end{itemize}
 \end{frame}
 
-\subsection{Simple Programs on Binary Trees}
+\subsection{Simple Programs on Binary Trees, Normal Forms}
 
 \begin{frame}
   \frametitle{Simple Programs on Binary Trees}
@@ -108,8 +133,6 @@
     \item ``simple'' programs: no loops or recursion
   \end{itemize}
 \end{frame}
-
-\subsection{Program Normal Forms}
 
 \begin{frame}
   \frametitle{Program Normal Forms}
