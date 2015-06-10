@@ -58,11 +58,28 @@
 
 \subsection{Binary Trees as a Universal Data Structure}
 
-\begin{frame}[Unlabeled Binary Trees]
+\begin{frame}[fragile]
   \frametitle{Unlabeled Binary Trees}
 	\[ 
 	T ~::=~ \texttt{nil} ~|~ (T ~.~ T)
 	\]
+  \begin{itemize}
+    \item Example: $(\texttt{nil} ~.~ (\texttt{nil} ~.~ \texttt{nil}))$
+  \end{itemize}
+  \vspace{0.5cm}    
+  \begin{tikzpicture}[level/.style={sibling distance=60mm/#1}]
+  \node[circle,draw] (root){$\bullet$}
+    child {node[rectangle,draw,rounded corners] (t1){$\texttt{nil}$}}
+    child {node[circle,draw] (t2){$\bullet$}
+      child {node[rectangle,draw,rounded corners] (t21){$\texttt{nil}$}}
+      child {node[rectangle,draw,rounded corners] (t21){$\texttt{nil}$}}
+      }
+    ;
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Binary Trees as a Universal Data Structure}
   \begin{itemize}
     \item Universal data structure 
     \item built-in pairing (unlike natural numbers, bitstrings, \ldots)
