@@ -69,6 +69,8 @@
     \item Example: $(\texttt{nil} ~.~ (\texttt{nil} ~.~ \texttt{nil}))$
   \end{itemize}
   \vspace{0.5cm}    
+  \begin{figure}
+  \centering
   \begin{tikzpicture}[level/.style={sibling distance=60mm/#1}]
   \node[circle,draw] (root){$\bullet$}
     child {node[rectangle,draw,rounded corners] (t1){$\texttt{nil}$}}
@@ -78,6 +80,7 @@
       }
     ;
   \end{tikzpicture}
+  \end{figure}
 \end{frame}
 
 \begin{frame}
@@ -202,6 +205,8 @@
 
 \begin{frame}[fragile]
   \frametitle{Tree Decomposition by Depth}
+  \begin{figure}
+  \centering
   \begin{tikzpicture}[level/.style={sibling distance=60mm/#1}]
   \node[circle,draw] (root){$\bullet$}
     child {node (t1){$\vdots$}}
@@ -222,6 +227,7 @@
   \draw [dotted] let \p1=(t1), \p2=(t221), \p3=(t2222) in (\x1-5mm, \y2) -- (\x3+10mm, \y2);
   \draw [<->] let \p1=(root), \p2=(t222), \p3=(t2222) in (\x3+5mm, \y1) -- node[right]{d} (\x3+5mm, \y2);
   \end{tikzpicture}
+  \end{figure}
 \end{frame}
 
 \begin{frame}
