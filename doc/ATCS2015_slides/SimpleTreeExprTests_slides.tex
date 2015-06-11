@@ -2,6 +2,7 @@
 \usetheme{Boadilla}
 
 \usepackage{amsfonts} % for \mathbb{...}
+\usepackage{amsmath} % \for \align, ...
 \usepackage{stmaryrd} % for \llbracket, ...
 \usepackage{hyperref} % for \url
 
@@ -167,7 +168,21 @@
   \mathit{Sel} & ~::=~ & \texttt{hd} ~|~ \texttt{tl} & 
   \end{array}
   \]
-  
+%  \pause
+%  \[
+%  \begin{array}{c|c|c|c|c|c}
+%  \circ & \texttt{I} & \texttt{hd}/ \texttt{tl} & \texttt{nil} & \texttt{cons}(\cdot, \cdot) & \texttt{ifnil}(\cdot, \cdot, \cdot) \\
+%  \hline
+%  \texttt{I}                          & (\ref{eq:id}) & (\ref{eq:id}) & (\ref{eq:id}) & (\ref{eq:id}) & (\ref{eq:id}) \\
+%  \texttt{hd}/ \texttt{tl}            & (\ref{eq:id}) & & & & \\
+%  \texttt{nil}                        & (\ref{eq:id}) & & & & \\
+%  \texttt{cons}(\cdot, \cdot)         & (\ref{eq:id}) & & & & \\
+%  \texttt{ifnil}(\cdot, \cdot, \cdot) & (\ref{eq:id}) & & & & 
+%  \end{array}
+%  \]
+%  \begin{eqnarray}
+%  \texttt{I} \circ e & = & e \circ \texttt{I} = e \label{eq:id} \\
+%  \end{eqnarray}
 \end{frame}
 
 % % % % % % % %
