@@ -170,6 +170,21 @@
   \mathit{Sel} & ~::=~ & \texttt{hd} ~|~ \texttt{tl} & 
   \end{array}
   \]
+  \begin{itemize}
+    \item normalization function: $\mathit{nf} : E \rightarrow E^{nf}$
+    \item \ldots which preserves semantics: 
+      $\forall e \in E, \forall t \in T, \llbracket \mathit{nf}(e) \rrbracket (t) = \llbracket e \rrbracket (t)$
+    \item Example:
+%Eval cbv in (normConv (Cmp (IfNil Id (Cons Id Id) Tl) (IfNil Hd Nil (Cons Tl Hd)))).
+% = NIfNil (HD :: nil) (NCons NNil NNil) (NSelCmp (HD :: nil))    
+      \begin{equation*}
+      \begin{aligned}
+      \mathit{nf} & (\texttt{ifnil}(\texttt{I}, \texttt{cons}(\texttt{I}, \texttt{I}), \texttt{tl})
+                          \circ \texttt{ifnil}(\texttt{hd}, \texttt{nil}, \texttt{cons}(\texttt{tl}, \texttt{hd}))) \\
+                  & = \texttt{ifnil}(\texttt{hd}, \texttt{cons}(\texttt{nil}, \texttt{nil}), \texttt{hd})
+      \end{aligned}
+      \end{equation*}
+  \end{itemize}
 \end{frame}
 
 % % % % % % % %
