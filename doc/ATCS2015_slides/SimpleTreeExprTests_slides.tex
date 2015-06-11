@@ -544,20 +544,29 @@
 
 \begin{frame}
   \frametitle{Program Normalization}
+  \begin{eqnarray}
+  \texttt{I} \circ e = e \circ \texttt{I} & = & e \label{eq:id} \\
+  \mathit{sel} \circ \texttt{cons}(e_1, e_2) & = & e_i \label{eq:sel-cons} \\
+  \texttt{nil} \circ e & = & \texttt{nil} \label{eq:nil-cmp} \\
+  \texttt{cons}(e_1, e_2) \circ e_3 & = & \texttt{cons}(e_1 \circ e_3, e_2 \circ e_3) \label{eq:cons-cmp} \\
+  e \circ \texttt{ifnil}(e_1, e_2, e_3) & = & \texttt{ifnil}(e_1, e \circ e_2, e \circ e_3) \label{eq:cmp-if} \\
+  \texttt{ifnil}(e_1, e_2, e_3) \circ e & = & \texttt{ifnil}(e_1 \circ e, e_2 \circ e, e_3 \circ e) \label{eq:if-cmp} \\
+  \texttt{ifnil}(\texttt{ifnil}(e_1, e_2, e_3), e'_2, e'_3) & = & \texttt{ifnil}(e_1, \texttt{ifnil}(e_2, e'_2, e'_3), \nonumber \\
+    & & \qquad \texttt{ifnil}(e_3, e'_2, e'_3)) \label{eq:if-if}
+  \end{eqnarray}
+  {\small 
   \[
   \begin{array}{c|c|c|c|c|c}
-  \circ & \texttt{I} & \texttt{hd}/ \texttt{tl} & \texttt{nil} & \texttt{cons}(\cdot, \cdot) & \texttt{ifnil}(\cdot, \cdot, \cdot) \\
+  \circ              & \texttt{I} & \texttt{hd}/ \texttt{tl} & \texttt{nil} & \texttt{cons}(\cdot, \cdot) & \texttt{ifnil}(\cdot, \cdot, \cdot) \\
   \hline
-  \texttt{I}                          & (\ref{eq:id}) & (\ref{eq:id}) & (\ref{eq:id}) & (\ref{eq:id}) & (\ref{eq:id}) \\
-  \texttt{hd}/ \texttt{tl}            & (\ref{eq:id}) & & & & \\
-  \texttt{nil}                        & (\ref{eq:id}) & & & & \\
-  \texttt{cons}(\cdot, \cdot)         & (\ref{eq:id}) & & & & \\
-  \texttt{ifnil}(\cdot, \cdot, \cdot) & (\ref{eq:id}) & & & & 
+  \texttt{I}                          & (\ref{eq:id}) & (\ref{eq:id})      & (\ref{eq:id})      & (\ref{eq:id})       & (\ref{eq:id})      \\
+  \texttt{hd}/ \texttt{tl}            & (\ref{eq:id}) & \text{--}          & \perp              & (\ref{eq:sel-cons}) & (\ref{eq:cmp-if})  \\
+  \texttt{nil}                        & (\ref{eq:id}) & (\ref{eq:nil-cmp}) & (\ref{eq:nil-cmp}) & (\ref{eq:nil-cmp})  & (\ref{eq:nil-cmp}) \\
+  \texttt{cons}(\cdot, \cdot)         & (\ref{eq:id}) & (\ref{eq:cons-cmp})& (\ref{eq:cons-cmp})& (\ref{eq:cons-cmp}) & (\ref{eq:cons-cmp})\\
+  \texttt{ifnil}(\cdot, \cdot, \cdot) & (\ref{eq:id}) & (\ref{eq:if-cmp})  & (\ref{eq:if-cmp})  & (\ref{eq:if-cmp})   & (\ref{eq:cmp-if}) 
   \end{array}
   \]
-  \begin{eqnarray}
-  \texttt{I} \circ e & = & e \circ \texttt{I} = e \label{eq:id} \\
-  \end{eqnarray}
+  }
 \end{frame}
 
 \end{document}
