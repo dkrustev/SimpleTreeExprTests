@@ -259,11 +259,26 @@
 	  \]
     \item Decomposition function: 
       $\mathit{cutAt} ~:~ \mathbb{N} \times T \rightarrow (X \rightarrow T) \times T_X$,
-      $cutAt(d, t) = (\sigma, t_x)$, where:
+      $\mathit{cutAt}(d, t) = (\sigma, t_x)$, where:
       \begin{itemize}
 	    \item $t_x$ is the tree $t$ with all nodes at depth $d$ replaced by variables from $X$
 	    \item $\sigma$ is a substitution assigning the corresponding subtree to each of these variables
 	  \end{itemize}
+	\item Example:
+%Eval simpl in (vCutAt 1 (VCons (VCons VNil VNil) (VCons (VCons VNil VNil) VNil)))
+      \begin{equation*}
+      \begin{aligned}
+       \mathit{cutAt} & (1, ((\texttt{nil} ~.~ \texttt{nil}) ~.~ ((\texttt{nil} ~.~ \texttt{nil}) ~.~ \texttt{nil}))) \\
+       = ( & \{ x \mapsto (\texttt{nil} ~.~ \texttt{nil}), y \mapsto ((\texttt{nil} ~.~ \texttt{nil}) ~.~ \texttt{nil}) \} , \\
+           & (x ~.~ y))
+      \end{aligned}
+      \end{equation*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tree Decomposition by Depth (cont.)}
+  \begin{itemize}
 	\item Correctness of decomposition (\texttt{vCutAt\_mvSubst}): 
 	  $\forall d \in \mathbb{N}, \forall t \in T, \forall \sigma, \forall t_x,$
 	  $cutAt(d, t) = (\sigma, t_x) \rightarrow t_x \sigma = t$, where:

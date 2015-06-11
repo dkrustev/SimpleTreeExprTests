@@ -473,6 +473,8 @@ Definition vCutAt (d:nat) (v: Val) : {n: nat & Subst n * MVal n}%type.
       { exact (MVCons (mvCast m mv1) (mvShift n mv2)). }
 Defined.
 
+(* Eval simpl in (vCutAt 1 (VCons (VCons VNil VNil) (VCons (VCons VNil VNil) VNil))). *)
+
 Lemma mvSubst_finSplitLR_mvCast: forall n m s1 s2 mv,
   mvSubst (fun i : Fin.t (n + m) =>
    match finSplitLR i with
